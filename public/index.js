@@ -63,12 +63,20 @@ Lista nr 5 - KKW LEWICA RAZEM - RAZEM, UNIA PRACY, RSS: ${obwod.lista5} (${(
 
 const markers = L.markerClusterGroup()
 const addObwodMarker = obwod => {
-  if (obwod.geoJSON.features.length > 0) {
-    const coordinates = obwod.geoJSON.features[0].geometry.coordinates
-    markers.addLayer(
-      L.marker([coordinates[1], coordinates[0]]).bindPopup(obwodPopup(obwod)),
-    )
-  }
+  const coordinates = obwod.geoJSON.features[0].geometry.coordinates
+  markers.addLayer(
+    L.marker([coordinates[1], coordinates[0]]).bindPopup(obwodPopup(obwod)),
+  )
+}
+
+const heatmapData = []
+const addHeatmapData = obwod => {
+  const coordinates = obwod.geoJSON.features[0].geometry.coordinates
+  heatmapData.push([
+    coordinates[1],
+    coordinates[0],
+    obwod.lista5 / obwod.liczbaKartWaznych,
+  ])
 }
 
 const obwody = fetch("../data/2019_pe/obwody_glosowania.json").then(response =>
@@ -99,8 +107,23 @@ Promise.all([obwody, wyniki])
       lista5_10: wyniki[index][92],
     })),
   )
-  .then(obwody => obwody.forEach(addObwodMarker))
-  .then(mymap.addLayer(markers))
+  .then(obwody =>
+    obwody.forEach(obwod => {
+      if (obwod.geoJSON.features.length > 0) {
+        addObwodMarker(obwod)
+        addHeatmapData(obwod)
+      }
+    }),
+  )
+  .then(() => {
+    mymap.addLayer(markers)
+    const heatLayer = new L.heatLayer(heatmapData, {
+      radius: 30,
+      maxZoom: 12,
+      max: 0.2,
+    })
+    mymap.addLayer(heatLayer)
+  })
 
 // 0: "Kod terytorialny gminy"
 // 1: "Nr obwodu głosowania"
