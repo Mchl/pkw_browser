@@ -1,10 +1,17 @@
-const mymap = L.map("mapid").setView([51.505, 21], 6)
+const mymap = L.map("mapid").setView([52.088611111111, 19.407222222222], 7)
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution:
-    'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-  maxZoom: 18,
-}).addTo(mymap)
+const baseLayers = {}
+const overLays = {}
+
+baseLayers.OpenStreetMap = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  {
+    attribution:
+      'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+    maxZoom: 18,
+    detectRetina: true,
+  },
+)
 
 const obwodPopup = obwod => `
 Powiat: ${obwod.powiat}<br/>
@@ -116,13 +123,21 @@ Promise.all([obwody, wyniki])
     }),
   )
   .then(() => {
-    mymap.addLayer(markers)
+    overLays["Komisje obwodowe"] = markers
     const heatLayer = new L.heatLayer(heatmapData, {
       radius: 30,
       maxZoom: 12,
       max: 0.2,
     })
-    mymap.addLayer(heatLayer)
+    overLays.Heatmapa = heatLayer
+    L.control
+      .layers(baseLayers, overLays, {
+        hideSingleBase: true,
+      })
+      .addTo(mymap)
+    baseLayers.OpenStreetMap.addTo(mymap)
+    overLays["Komisje obwodowe"].addTo(mymap)
+    overLays.Heatmapa.addTo(mymap)
   })
 
 // 0: "Kod terytorialny gminy"
