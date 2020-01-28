@@ -26,19 +26,19 @@ Lista nr 5 - KKW LEWICA RAZEM - RAZEM, UNIA PRACY, RSS: ${obwod.lista5} (${(
   (100 * obwod.lista5) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-1 ZAWISZA Marcelina Monika: ${obwod.lista5_1} (${(
+1: ${obwod.lista5_1} (${(
   (100 * obwod.lista5_1) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-2 PRZYSTAJKO Jerzy: ${obwod.lista5_2} (${(
+2: ${obwod.lista5_2} (${(
   (100 * obwod.lista5_2) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-3 PIWCEWICZ Jolanta Anna: ${obwod.lista5_3} (${(
+3: ${obwod.lista5_3} (${(
   (100 * obwod.lista5_3) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-4 BROWARNY Wojciech Jan: ${obwod.lista5_4} (${(
+4: ${obwod.lista5_4} (${(
   (100 * obwod.lista5_4) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
@@ -54,15 +54,15 @@ Lista nr 5 - KKW LEWICA RAZEM - RAZEM, UNIA PRACY, RSS: ${obwod.lista5} (${(
   (100 * obwod.lista5_7) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-8 DROST Andrzej Oswald: ${obwod.lista5_8} (${(
+8: ${obwod.lista5_8} (${(
   (100 * obwod.lista5_8) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-9 BURAKOWSKA Krystyna Anna: ${obwod.lista5_9} (${(
+9: ${obwod.lista5_9} (${(
   (100 * obwod.lista5_9) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-10 CHUDY Filip: ${obwod.lista5_10} (${(
+10: ${obwod.lista5_10} (${(
   (100 * obwod.lista5_10) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
@@ -92,21 +92,47 @@ const obwody = fetch("../data/2019_pe/obwody_glosowania.jsonl")
   .then(rows => rows.slice(0, -1))
   .then(rows => rows.map(JSON.parse))
 
-const wyniki = fetch("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_12.csv")
-  .then(response => response.text())
-  .then(text => text.split("\n"))
-  .then(rows => rows.slice(1, -1))
-  .then(rows => rows.map(row => row.split(";")))
-  .then(rows =>
-    rows.reduce((wyniki, row) => {
-      const [teryt, numerObwodu] = row
-      if (!wyniki[teryt]) {
-        wyniki[teryt] = {}
-      }
-      wyniki[teryt][numerObwodu] = row
-      return wyniki
-    }, {}),
+const loadWyniki = path =>
+  fetch(path)
+    .then(response => response.text())
+    .then(text => text.split("\n"))
+    .then(rows => rows.slice(1, -1))
+    .then(rows => rows.map(row => row.split(";")))
+    .then(rows =>
+      rows.reduce((wyniki, row) => {
+        const [teryt, numerObwodu] = row
+        if (!wyniki[teryt]) {
+          wyniki[teryt] = {}
+        }
+        wyniki[teryt][numerObwodu] = row
+        return wyniki
+      }, {}),
+    )
+
+const wynikiPromises = [
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_1.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_2.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_3.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_4.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_5.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_6.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_7.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_8.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_9.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_10.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_11.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_12.csv"),
+  loadWyniki("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_13.csv"),
+]
+
+const wyniki = Promise.all(wynikiPromises)
+  .then(wyniki =>
+    wyniki.reduce((wyniki, obwod) => ({ ...wyniki, ...obwod }), {}),
   )
+  .then(a => {
+    console.log({ a })
+    return a
+  })
 
 Promise.all([obwody, wyniki])
   .then(([obwody, wyniki]) =>
