@@ -15,55 +15,20 @@ const trimQuotes = string => string.replace(/^"/, "").replace(/"$/, "")
 
 const superAgentTransformStream = new require("stream").Transform({
   transform: function transformer(chunk, encoding, callback) {
-    const csv = chunk
-      .toString()
-      .split(";")
-      .map(trimQuotes)
-    const [
-      teryt,
-      gmina,
-      powiat,
-      numerObwodu,
-      mieszkancy,
-      wyborcy,
-      siedziba,
-      miejscowosc,
-      ulica,
-      numerPosesji,
-      numerLokalu,
-      kodPocztowy,
-      poczta,
-      typObwodu,
-      przystosowanyDlaNiepelnosprawnych,
-      typObszaru,
-      pelnaSiedziba,
-      opisGranic,
-    ] = csv
+    let obwod = JSON.parse(chunk.toString())
 
-    let obwod = {
-      teryt,
-      gmina,
-      powiat,
-      numerObwodu: Number(numerObwodu),
-      mieszkancy: Number(mieszkancy),
-      wyborcy: Number(wyborcy),
-      siedziba,
-      miejscowosc,
-      ulica,
-      numerPosesji,
-      numerLokalu,
-      kodPocztowy,
-      poczta,
-      typObwodu,
-      przystosowanyDlaNiepelnosprawnych:
-        przystosowanyDlaNiepelnosprawnych === "Tak",
-      typObszaru,
-      pelnaSiedziba,
-      opisGranic,
+    if (obwod.geoJSON.features.length !== 0) {
+      callback(false, `${JSON.stringify(obwod)}\n`)
+      return
     }
 
+    const powiatUri =
+      obwod.powiat.slice(0, 1).toUpperCase() === obwod.powiat.slice(0, 1)
+        ? obwod.powiat
+        : `powiat ${obwod.powiat}`
+
     const requestPath = encodeURI(
-      `https://nominatim.openstreetmap.org/search/Poland/powiat ${obwod.powiat}/${obwod.miejscowosc}/${obwod.ulica}/${obwod.numerPosesji}?format=geojson`,
+      `https://nominatim.openstreetmap.org/search/Poland/${powiatUri}/${obwod.miejscowosc}/${obwod.ulica}/${obwod.numerPosesji}?format=geojson`,
     )
 
     console.log({ requestPath })
@@ -84,7 +49,7 @@ const superAgentTransformStream = new require("stream").Transform({
   },
 })
 
-fs.createReadStream("./data/2019_pe/obwody_glosowania.csv")
+fs.createReadStream("./data/2019_pe/obwody_glosowania_1.jsonl")
   .pipe(split())
   .pipe(superAgentTransformStream)
   .pipe(fs.createWriteStream("./data/2019_pe/obwody_glosowania.jsonl"))

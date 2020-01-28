@@ -42,15 +42,15 @@ Lista nr 5 - KKW LEWICA RAZEM - RAZEM, UNIA PRACY, RSS: ${obwod.lista5} (${(
   (100 * obwod.lista5_4) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-5 JAROŃSKA Kamila Maria: ${obwod.lista5_5} (${(
+5: ${obwod.lista5_5} (${(
   (100 * obwod.lista5_5) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-6 MAKÓWKA Jacek Edward: ${obwod.lista5_6} (${(
+6: ${obwod.lista5_6} (${(
   (100 * obwod.lista5_6) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
-7 STABROWSKA Anna Ewa: ${obwod.lista5_7} (${(
+7: ${obwod.lista5_7} (${(
   (100 * obwod.lista5_7) /
   obwod.liczbaKartWaznych
 ).toFixed(2)}%)<br/>
