@@ -86,34 +86,56 @@ const addHeatmapData = obwod => {
   ])
 }
 
-const obwody = fetch("../data/2019_pe/obwody_glosowania.json").then(response =>
-  response.json(),
-)
+const obwody = fetch("../data/2019_pe/obwody_glosowania.jsonl")
+  .then(response => response.text())
+  .then(text => text.split("\n"))
+  .then(rows => rows.slice(0, -1))
+  .then(rows => rows.map(JSON.parse))
 
 const wyniki = fetch("../data/2019_pe/wyniki_gl_na_kand_po_obwodach_12.csv")
   .then(response => response.text())
   .then(text => text.split("\n"))
   .then(rows => rows.slice(1, -1))
   .then(rows => rows.map(row => row.split(";")))
+  .then(rows =>
+    rows.reduce((wyniki, row) => {
+      const [teryt, numerObwodu] = row
+      if (!wyniki[teryt]) {
+        wyniki[teryt] = {}
+      }
+      wyniki[teryt][numerObwodu] = row
+      return wyniki
+    }, {}),
+  )
 
 Promise.all([obwody, wyniki])
   .then(([obwody, wyniki]) =>
-    obwody.map((obwod, index) => ({
-      ...obwod,
-      liczbaKartWaznych: wyniki[index][28],
-      lista5: wyniki[index][82],
-      lista5_1: wyniki[index][83],
-      lista5_2: wyniki[index][84],
-      lista5_3: wyniki[index][85],
-      lista5_4: wyniki[index][86],
-      lista5_5: wyniki[index][87],
-      lista5_6: wyniki[index][88],
-      lista5_7: wyniki[index][89],
-      lista5_8: wyniki[index][90],
-      lista5_9: wyniki[index][91],
-      lista5_10: wyniki[index][92],
-    })),
+    obwody.map(obwod => {
+      if (wyniki[obwod.teryt] && wyniki[obwod.teryt][obwod.numerObwodu]) {
+        return {
+          ...obwod,
+          liczbaKartWaznych: wyniki[obwod.teryt][obwod.numerObwodu][28],
+          lista5: wyniki[obwod.teryt][obwod.numerObwodu][82],
+          lista5_1: wyniki[obwod.teryt][obwod.numerObwodu][83],
+          lista5_2: wyniki[obwod.teryt][obwod.numerObwodu][84],
+          lista5_3: wyniki[obwod.teryt][obwod.numerObwodu][85],
+          lista5_4: wyniki[obwod.teryt][obwod.numerObwodu][86],
+          lista5_5: wyniki[obwod.teryt][obwod.numerObwodu][87],
+          lista5_6: wyniki[obwod.teryt][obwod.numerObwodu][88],
+          lista5_7: wyniki[obwod.teryt][obwod.numerObwodu][89],
+          lista5_8: wyniki[obwod.teryt][obwod.numerObwodu][90],
+          lista5_9: wyniki[obwod.teryt][obwod.numerObwodu][91],
+          lista5_10: wyniki[obwod.teryt][obwod.numerObwodu][92],
+        }
+      } else {
+        return {
+          ...obwod,
+          liczbaKartWaznych: 0,
+        }
+      }
+    }),
   )
+  .then(obwody => obwody.filter(obwod => obwod.liczbaKartWaznych !== 0))
   .then(obwody =>
     obwody.forEach(obwod => {
       if (obwod.geoJSON.features.length > 0) {
