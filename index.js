@@ -101,7 +101,7 @@ const superAgentTransformStream = new TransformStream({
     )
     const miejscowoscUri = encodeURIComponent(obwod.miejscowosc)
     const ulicaUri = encodeURIComponent(obwod.ulica)
-    const numerPosesjiUri = encodeURIComponent(obwod.numerPosesji)
+    const numerPosesjiUri = encodeURIComponent(obwod.numerPosesji.replace(/\//g,'-'))
 
     const requestPath = `https://nominatim.openstreetmap.org/search/Poland/${powiatUri}/${miejscowoscUri}/${ulicaUri}/${numerPosesjiUri}?format=geojson`
 
